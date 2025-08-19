@@ -1,0 +1,25 @@
+[project]
+name = "jsalchemy-web-context"
+version = "0.1.0"
+description = "Manage asynchronous contexts with SQLAlchemy and Redis"
+authors = [
+    {name = "Giuseppe Di Bona",email = "giusedb@gmail.com"}
+]
+keywords = [ "async", "context", "web-framework" ]
+license = {text = "GPLv3.1"}
+readme = "README.md"
+requires-python = ">=3.11.0,<4.0.0"
+dependencies = [
+    "sqlalchemy (>=2.0.43,<3.0.0)",
+    "greenlet (>=3.2.4,<4.0.0)"
+]
+package-mode = true
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+fakeredis = "^2.31.0"
+aiosqlite = "^0.21.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
