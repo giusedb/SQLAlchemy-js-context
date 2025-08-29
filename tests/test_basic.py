@@ -1,7 +1,5 @@
 from asyncio import gather, run
 
-import pytest
-from fakeredis.aioredis import FakeRedis
 from sqlalchemy import select
 from jsalchemy_web_context import ContextManager, session, request, db
 import asyncio
