@@ -1,6 +1,6 @@
 [project]
-name = "jsalchemy-web-context"
-version = "0.1.0"
+name = "sqlalchemy-js-web-context"
+version = "0.1.1"
 description = "Manage asynchronous contexts with SQLAlchemy and Redis"
 authors = [
     {name = "Giuseppe Di Bona",email = "giusedb@gmail.com"}
@@ -13,7 +13,10 @@ dependencies = [
     "sqlalchemy (>=2.0.43,<3.0.0)",
     "greenlet (>=3.2.4,<4.0.0)"
 ]
-package-mode = true
+
+[tool.poetry]
+packages = [{include = "jsalchemy_web_context", from = "src"}]
+
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"

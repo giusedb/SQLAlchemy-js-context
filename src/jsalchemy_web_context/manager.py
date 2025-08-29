@@ -1,7 +1,7 @@
 from typing import Callable
 from contextvars import ContextVar
 from .redis import RedisSessionManager
-from redis import Redis
+from redis.asyncio import Redis
 
 class Request:
     """Request-based empty object"""
@@ -37,7 +37,9 @@ class ContextManager:
 
     def __init__(self, session_maker: Callable,
                  redis_connection: Redis | str = 'redis://localhost:6379/0'):
+        global redis
         self.session_maker = session_maker
+        self.redis = redis = Redis.from_url(redis_connection) if isinstance(redis_connection, str) else redis_connection
         self.web_session_man = RedisSessionManager(redis_connection)
 
     def __call__(self, token: str | None = None):
@@ -68,3 +70,4 @@ class ContextProxy:
 session = ContextProxy('session')
 request = ContextProxy('request')
 db = ContextProxy('db_session')
+redis = None
