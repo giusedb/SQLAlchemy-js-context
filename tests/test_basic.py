@@ -45,7 +45,6 @@ def test_context_segregation(context_manager):
         async def req(y):
             nonlocal token
             async with context_manager(token) as ctx:
-                print(f'r1:{x}:{y} {ctx.token}')
                 assert bool(token) == bool(y)
                 if token:
                     _ = session.foo == 'foobar', 'Session not connected'
@@ -57,13 +56,11 @@ def test_context_segregation(context_manager):
                 token = ctx.token
 
             async with context_manager(token) as ctx:
-                print(f'r2:{x}:{y} {ctx.token}')
                 assert session.foo == 'foobar', 'Session not connected'
                 get = request.foo
                 assert get == None
                 request.foo = 'bar'
                 assert request.foo == 'bar', 'Request not connected'
-            print(f"Done {x}:{y}")
         await req(0)
         await req(1)
         await req(2)
@@ -72,7 +69,6 @@ def test_context_segregation(context_manager):
         await gather(*(asyncio.create_task(request1(_)) for _ in range(4)))
 
     run(main())
-
 
 def test_basic(session_maker, item, context_manager):
 
