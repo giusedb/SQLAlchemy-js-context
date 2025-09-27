@@ -1,18 +1,29 @@
 from pickle import dumps, loads
 
-class Storage:
+class Storage(dict):
 
     def __init__(self, data: dict):
         for name, value in data.items():
             setattr(self, name, value)
 
+    def __getattr__(self, item):
+        return self.get(item)
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+    def __delattr__(self, item):
+        del self[item]
+
+
     def dumps(self) -> str:
         """Serialize the session"""
-        return dumps(self.__dict__)
+
+        return dumps(dict(self))
 
     async def loads(self, pickle:str) -> 'Session':
         """Create a Session object from a piclke stiring."""
-        if data:
+        if pickle is None:
             data = loads(pickle)
         else:
             data = {}
