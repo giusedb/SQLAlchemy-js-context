@@ -54,3 +54,58 @@ def context_manager(session_maker):
 def context(context_manager):
     """Creates a context to be user withing an async with bloc."""
     return context_manager()
+
+
+## ----- RUN Sync ----
+
+@pytest.fixture
+def sync_engine():
+    """Connect SQLAlchemy to SQLite in-memory database and return the engine."""
+    from sqlalchemy import create_engine
+
+    return create_engine("sqlite:///:memory:", )
+
+@pytest.fixture
+def sync_session_maker(sync_engine):
+    """Connect SQLAlchemy to SQLLite in-memory database and return the sessionmager() function."""
+    from sqlalchemy.orm import sessionmaker
+
+    return sessionmaker(sync_engine, expire_on_commit=False)
+
+@pytest.fixture
+def sync_item(sync_session_maker, sync_engine):
+    """Return the Item model."""
+    from sqlalchemy.orm import declarative_base, Mapped
+    from sqlalchemy import Column, Integer
+
+    Base = declarative_base()
+
+    class Item(Base):
+        __tablename__ = 'item'
+
+        id: Mapped[int] = Column(Integer, primary_key=True, nullable=True)
+        name: Mapped[str]
+
+        def __repr__(self):
+            return f"<Item {self.name}>"
+
+    def init():
+        with sync_engine.begin() as connection:
+            Base.metadata.create_all(connection)
+
+    init()
+
+    return Item
+
+@pytest.fixture
+def sync_context_manager(sync_session_maker):
+    """Return a ContextManager instance."""
+    from jsalchemy_web_context.sync.manager import ContextManager
+    from fakeredis import FakeRedis
+    return ContextManager(sync_session_maker, FakeRedis.from_url('redis://localhost:6379/0'))
+
+
+@pytest.fixture
+def sync_context(context_manager):
+    """Creates a context to be user withing an async with bloc."""
+    return sync_context_manager()
