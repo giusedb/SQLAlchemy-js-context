@@ -84,7 +84,7 @@ async def test_cache_request_discard_all(context_manager):
         assert ret == 9
         assert count == 1
 
-        mysum.discard_all()
+        await mysum.discard_all()
 
         ret = await mysum(3, 4, 2)
         assert ret == 9
@@ -117,7 +117,7 @@ async def test_cache_request_discard(context_manager):
         assert ret == 3
         assert count == 1
 
-        mysum.discard(1)
+        await mysum.discard(1)
 
         ret = await mysum(1)
         assert ret == 3
@@ -136,22 +136,22 @@ async def test_cache_request_discard(context_manager):
             await mysub(*args)
         assert count == 20
 
-        mysub.discard(a=1)
+        await mysub.discard(a=1)
 
         count = 0
         for args in permutations(range(1, 6), 2):
             await mysub(*args)
         assert count == 4
 
-        mysub.discard(b=2)
+        await mysub.discard(b=2)
 
         count = 0
         for args in permutations(range(1, 6), 2):
             await mysub(*args)
         assert count == 4
 
-        mysub.discard(1, 2)
-        mysub.discard(2, 1)
+        await mysub.discard(1, 2)
+        await mysub.discard(2, 1)
 
         count = 0
         for args in permutations(range(1, 6), 2):
