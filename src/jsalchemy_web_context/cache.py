@@ -145,10 +145,12 @@ def request_cache(*attr_paths, separator=None):
             cache[key] = result
             return result
 
-        def discard_all():
+        async def discard_all():
             get_local_cache().clear()
+            if hasattr(func, 'discard_all'):
+                await func.discard_all()
 
-        def discard(*d_args, **d_kwargs):
+        async def discard(*d_args, **d_kwargs):
             nonlocal separator
             if not hasattr(request, cache_key):
                 return
@@ -156,17 +158,19 @@ def request_cache(*attr_paths, separator=None):
 
             # Build a signature that does **not** contain the `request` param
             discard_sig = sig.replace(parameters=list(sig.parameters.values()))
-
             try:
                 discard_bound = discard_sig.bind(*d_args, **d_kwargs)
             except TypeError:
-                return discard_all()
+                return await discard_all()
 
             attr_match = re.compile(_make_key(discard_bound, attr_paths, separator, for_removal=True))
 
             to_remove = {x for x in cache if attr_match.match(x)}
             for key in to_remove:
                 del cache[key]
+
+            if hasattr(func, 'discard'):
+                await func.discard(*d_args, **d_kwargs)
 
         wrapper.discard_all = discard_all
         wrapper.discard = discard
@@ -206,6 +210,8 @@ def redis_cache(*attr_paths, ttl=CACHE_TTL, separator=None):
 
         async def discard_all():
             await CACHE.delete(cache_key)
+            if hasattr(func, 'discard_all'):
+                await func.discard_all()
 
         async def discard(*d_args, **d_kwargs):
             nonlocal separator
@@ -217,7 +223,7 @@ def redis_cache(*attr_paths, ttl=CACHE_TTL, separator=None):
             try:
                 discard_bound = discard_sig.bind(*d_args, **d_kwargs)
             except TypeError:
-                return discard_all()
+                return await discard_all()
 
             attr_match = re.compile(_make_key(discard_bound, attr_paths, separator, for_removal=True))
             cached = await CACHE.hkeys(cache_key)
@@ -225,6 +231,8 @@ def redis_cache(*attr_paths, ttl=CACHE_TTL, separator=None):
             to_remove = {x for x in cached if attr_match.match(x.decode('utf-8'))}
             if to_remove:
                 await CACHE.hdel(cache_key, *to_remove)
+            if hasattr(func, 'discard'):
+                await func.discard(*d_args, **d_kwargs)
 
         wrapper.discard_all = discard_all
         wrapper.discard = discard
