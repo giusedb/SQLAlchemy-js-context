@@ -1,3 +1,4 @@
+from types import FunctionType
 from typing import Callable
 from contextvars import ContextVar
 
@@ -28,25 +29,43 @@ class ContextManager:
             self.db_session.begin()
             db.update(self.db_session)
             redis.update(self.manager.redis)
+            is_active.update(True)
+            if self.manager.change_interceptor:
+                self.manager.change_interceptor.start_record()
             return self
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             await self.manager.web_session_man.disconnect(self.session, self.token)
+            if not self.manager.auto_commit:
+                return
             if not any((exc_val, exc_tb, exc_type)):
                 await self.db_session.commit()
+                if self.manager.change_interceptor:
+                    self.manager.change_interceptor.end_transaction()
             else:
                 await self.db_session.rollback()
+            is_active.update(False)
 
     def __init__(self, session_maker: Callable,
-                 redis_connection: Redis | str = 'redis://localhost:6379/0'):
+                 redis_connection: Redis | str = 'redis://localhost:6379/0',
+                 auto_commit: bool = False, trace_changes: bool = False, change_call_back: FunctionType = None):
         from .cache import setup_cache
         setup_cache(redis_connection=redis_connection)
+        self.auto_commit = auto_commit
         self.session_maker = session_maker
         self.redis = Redis.from_url(redis_connection) if isinstance(redis_connection, str) else redis_connection
         self.web_session_man = RedisSessionManager(redis_connection)
+        if change_call_back or trace_changes:
+            from .interceptors import ChangeInterceptor
+            self.change_interceptor = ChangeInterceptor(change_call_back)
+        else:
+            self.change_interceptor = None
 
     def __call__(self, token: str | None = None):
         return self.Context(self, token)
+
+    async def destroy(self, token: str):
+        await self.web_session_man.destroy(token)
 
 class ContextProxy:
     def __init__(self, name: str):
@@ -72,3 +91,4 @@ session = ContextProxy('session')
 request = ContextProxy('request')
 db = ContextProxy('db_session')
 redis = ContextProxy('redis')
+is_active = ContextProxy('is_active')
