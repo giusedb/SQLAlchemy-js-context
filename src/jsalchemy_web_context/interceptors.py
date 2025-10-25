@@ -16,7 +16,7 @@ class ResultData:
         self.new = set()
         self.update = set()
         self.delete = set()
-        self.description = []
+        self.extra = {}
         self.m2m = []
 
     def update_diff(self):
@@ -43,14 +43,14 @@ class ResultData:
         self.new.clear()
         self.update.clear()
         self.delete.clear()
-        self.description.clear()
+        self.extra.clear()
         self.m2m.clear()
 
     def __repr__(self):
         summary = {k: v for k, v in ((k, len(getattr(self, k))) for k in self.__slots__) if v}
         return f"ResultData: {summary}"
 
-    __slots__ = ('description', 'delete', 'm2m', 'new', 'update')
+    __slots__ = ('extra', 'delete', 'm2m', 'new', 'update')
 
 
 class ChangeInterceptor:
