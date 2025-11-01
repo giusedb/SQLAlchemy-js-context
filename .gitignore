@@ -1,3 +1,5 @@
 src/jsalchemy_web_context/__pycache__
 tests/__pycache__
 .idea
+poetry.lock
+*.pyc
