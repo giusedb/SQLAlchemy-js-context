@@ -1,3 +1,4 @@
+from types import FunctionType
 from typing import Callable
 import threading
 from contextlib import contextmanager
@@ -49,12 +50,21 @@ class ContextManager:
     """JSAlchemy request context manager using thread.local instead of ContextVar."""
 
     def __init__(self, session_maker: Callable,
-                 redis_connection: redis.Redis | str = 'redis://localhost:6379/0'):
+                 redis_connection: redis.Redis | str = 'redis://localhost:6379/0',
+                 auto_commit: bool = False, trace_changes: bool = False, change_call_back: FunctionType = None):
         from .cache import setup_cache
         setup_cache(redis_connection=redis_connection)
         self.session_maker = session_maker
         self.redis = redis.Redis.from_url(redis_connection) if isinstance(redis_connection, str) else redis_connection
         self.web_session_man = RedisSessionManager(redis_connection)
+        self.auto_commit = auto_commit
+        self.trace_changes = trace_changes
+        self.change_call_back = change_call_back
+        if change_call_back or trace_changes:
+            from ..interceptors import ChangeInterceptor
+            self.change_interceptor = ChangeInterceptor(change_call_back, request=request)
+        else:
+            self.change_interceptor = None
 
     def __enter__(self):
         _thread_local.context = WebContext()
