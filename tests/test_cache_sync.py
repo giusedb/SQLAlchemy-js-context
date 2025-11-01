@@ -6,7 +6,7 @@ from jsalchemy_web_context.sync.cache import request_cache, redis_cache, setup_c
 
 # --- REQUEST CACHING ---
 
-def test_cache_request(sync_context_manager):
+def test_cache_request(sync_context):
     count = 0
 
     @request_cache('a', 'b')
@@ -15,7 +15,7 @@ def test_cache_request(sync_context_manager):
         count += 1
         return a + b + c
 
-    with sync_context_manager():
+    with sync_context():
         ret = mysum(3, 3, 3)
         assert ret == 9
         assert count == 1
@@ -28,7 +28,7 @@ def test_cache_request(sync_context_manager):
         assert ret == 9
         assert count == 2
 
-def test_cache_request_with_objects(sync_context_manager):
+def test_cache_request_with_objects(sync_context):
     count = 0
     class Foo(NamedTuple):
         id: int
@@ -43,7 +43,7 @@ def test_cache_request_with_objects(sync_context_manager):
         count += 1
         return a.value + b.value + c
 
-    with sync_context_manager():
+    with sync_context():
         ret = mysum(Foo(1, 100, 'a'), Foo(2, 200, 'b'))
         assert ret == 300
         assert count == 1
@@ -60,7 +60,7 @@ def test_cache_request_with_objects(sync_context_manager):
         assert ret == 50
         assert count == 2
 
-def test_cache_request_discard_all(sync_context_manager):
+def test_cache_request_discard_all(sync_context):
     count = 0
 
     @request_cache('a', 'b')
@@ -69,7 +69,7 @@ def test_cache_request_discard_all(sync_context_manager):
         count += 1
         return a + b + c
 
-    with sync_context_manager():
+    with sync_context():
         ret = mysum(3, 3, 3)
         assert ret == 9
         assert count == 1
@@ -84,7 +84,7 @@ def test_cache_request_discard_all(sync_context_manager):
         assert ret == 9
         assert count == 2
 
-def test_cache_request_discard(sync_context_manager):
+def test_cache_request_discard(sync_context):
     count = 0
 
     @request_cache('b', 'a')
@@ -100,7 +100,7 @@ def test_cache_request_discard(sync_context_manager):
         count += 1
         return a + b + c
 
-    with sync_context_manager():
+    with sync_context():
         mysub.discard_all()
         mysum.discard_all()
 
@@ -155,7 +155,7 @@ def test_cache_request_discard(sync_context_manager):
 
 # --- REDIS CACHING ---
 
-def test_cache_redis(sync_context_manager):
+def test_cache_redis(sync_context):
     count = 0
 
     @redis_cache('a', 'b')
@@ -164,7 +164,7 @@ def test_cache_redis(sync_context_manager):
         count += 1
         return a + b + c
 
-    with sync_context_manager():
+    with sync_context():
         mysum.discard_all()
 
         ret = mysum(3, 3, 3)
@@ -179,7 +179,7 @@ def test_cache_redis(sync_context_manager):
         assert ret == 9
         assert count == 2
 
-def test_cache_redis_with_objects(sync_context_manager):
+def test_cache_redis_with_objects(sync_context):
     count = 0
     class Foo(NamedTuple):
         id: int
@@ -194,7 +194,7 @@ def test_cache_redis_with_objects(sync_context_manager):
         count += 1
         return a.value + b.value + c
 
-    with sync_context_manager():
+    with sync_context():
         ret = mysum(Foo(1, 100, 'a'), Foo(2, 200, 'b'))
         assert ret == 300
         assert count == 1
@@ -211,7 +211,7 @@ def test_cache_redis_with_objects(sync_context_manager):
         assert ret == 50
         assert count == 2
 
-def test_cache_redis_discard_all(sync_context_manager):
+def test_cache_redis_discard_all(sync_context):
     count = 0
 
     @redis_cache('a', 'b')
@@ -220,7 +220,7 @@ def test_cache_redis_discard_all(sync_context_manager):
         count += 1
         return a + b + c
 
-    with sync_context_manager():
+    with sync_context():
         mysum.discard_all()
 
         ret = mysum(3, 3, 3)
@@ -237,7 +237,7 @@ def test_cache_redis_discard_all(sync_context_manager):
         assert ret == 9
         assert count == 2
 
-def test_cache_redis_discard(sync_context_manager):
+def test_cache_redis_discard(sync_context):
     count = 0
 
     @redis_cache('b', 'a')
@@ -253,7 +253,7 @@ def test_cache_redis_discard(sync_context_manager):
         count += 1
         return a + b + c
 
-    with sync_context_manager():
+    with sync_context():
         mysum.discard_all()
         mysub.discard_all()
 
@@ -306,7 +306,7 @@ def test_cache_redis_discard(sync_context_manager):
             mysub(*args)
         assert count == 2
 
-def test_cache_redis_ttl(sync_context_manager):
+def test_cache_redis_ttl(sync_context):
     import time
     count = 0
     setup_cache(default_ttl=200)
@@ -317,7 +317,7 @@ def test_cache_redis_ttl(sync_context_manager):
         count += 1
         return a + b + c
 
-    with sync_context_manager():
+    with sync_context():
         mysum2.discard_all()
 
         ret = mysum2(1)

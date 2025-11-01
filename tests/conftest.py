@@ -32,6 +32,7 @@ def item(session_maker, engine):
     Base = declarative_base()
 
     class Item(Base):
+        """Item model."""
         __tablename__ = 'item'
 
         id: Mapped[int] = Column(Integer, primary_key=True, nullable=True)
@@ -170,14 +171,14 @@ def sync_item(sync_session_maker, sync_engine):
     return Item
 
 @pytest.fixture
-def sync_context_manager(sync_session_maker):
+def sync_context(sync_session_maker):
     """Return a ContextManager instance."""
     from jsalchemy_web_context.sync.manager import ContextManager
     from fakeredis import FakeRedis
-    return ContextManager(sync_session_maker, FakeRedis.from_url('redis://localhost:6379/0'))
+    return ContextManager(sync_session_maker, FakeRedis.from_url('redis://localhost:6379/0'), auto_commit=True)
 
 
-@pytest.fixture
-def sync_context(context_manager):
-    """Creates a context to be user withing an async with bloc."""
-    return sync_context_manager()
+# @pytest.fixture
+# def sync_context(context_manager):
+#     """Creates a context to be user withing an async with bloc."""
+#     return sync_context_manager()

@@ -36,10 +36,10 @@ def test_proxy_dict_isolation():
     assert max_dashes == 1
     assert len(result) == 40
 
-def test_context_segregation(sync_context_manager):
+def test_context_segregation(sync_context):
 
     def req(token=None):
-        with sync_context_manager(token) as ctx:
+        with sync_context(token) as ctx:
             tokens.add(ctx.token)
             assert token in (None, ctx.token)
             if token:
@@ -51,7 +51,7 @@ def test_context_segregation(sync_context_manager):
                 session.foo = 'foobar'
             token = ctx.token
 
-        with sync_context_manager(token) as ctx:
+        with sync_context(token) as ctx:
             assert session.foo == 'foobar', 'Session not connected'
             get = request.foo
             assert get == None
@@ -67,7 +67,7 @@ def test_context_segregation(sync_context_manager):
     assert len(tokens) == 10
 
 
-def test_basic(sync_session_maker, sync_item, sync_context_manager):
+def test_basic(sync_session_maker, sync_item, sync_context):
 
 
     token = None
@@ -75,13 +75,13 @@ def test_basic(sync_session_maker, sync_item, sync_context_manager):
 
     def login():
         nonlocal token
-        with sync_context_manager() as ctx:
+        with sync_context() as ctx:
             token = ctx.token
 
     def set_data():
         nonlocal token
         nonlocal count
-        with sync_context_manager(token):
+        with sync_context(token):
             count += 1
             db.add(sync_item(name='foo'))
             request.attribute  = 'bar'
@@ -92,7 +92,7 @@ def test_basic(sync_session_maker, sync_item, sync_context_manager):
 
     def get_data():
         nonlocal token
-        with sync_context_manager(token):
+        with sync_context(token):
             items = db.execute(select(sync_item)).scalars().all()
             assert len(items) == count
             assert request.attribute == None

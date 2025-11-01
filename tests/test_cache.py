@@ -5,12 +5,11 @@ import pytest
 from typing_extensions import NamedTuple
 
 from jsalchemy_web_context.cache import request_cache, redis_cache, setup_cache
-from tests.conftest import context_manager
 
 # --- REQUEST CACHING ---
 
 @pytest.mark.asyncio
-async def test_cache_request(context_manager):
+async def test_cache_request(context):
     count = 0
 
     @request_cache('a', 'b')
@@ -19,7 +18,7 @@ async def test_cache_request(context_manager):
         count += 1
         return a + b + c
 
-    async with context_manager():
+    async with context():
         ret = await mysum(3, 3, 3)
         assert ret == 9
         assert count == 1
@@ -33,7 +32,7 @@ async def test_cache_request(context_manager):
         assert count == 2
 
 @pytest.mark.asyncio
-async def test_cache_request_with_objects(context_manager):
+async def test_cache_request_with_objects(context):
     count = 0
     class Foo(NamedTuple):
         id: int
@@ -48,7 +47,7 @@ async def test_cache_request_with_objects(context_manager):
         count += 1
         return a.value + b.value + c
 
-    async with context_manager():
+    async with context():
         ret = await mysum(Foo(1, 100, 'a'), Foo(2, 200, 'b'))
         assert ret == 300
         assert count == 1
@@ -66,7 +65,7 @@ async def test_cache_request_with_objects(context_manager):
         assert count == 2
 
 @pytest.mark.asyncio
-async def test_cache_request_discard_all(context_manager):
+async def test_cache_request_discard_all(context):
     count = 0
 
     @request_cache('a', 'b')
@@ -75,7 +74,7 @@ async def test_cache_request_discard_all(context_manager):
         count += 1
         return a + b + c
 
-    async with context_manager():
+    async with context():
         ret = await mysum(3, 3, 3)
         assert ret == 9
         assert count == 1
@@ -91,7 +90,7 @@ async def test_cache_request_discard_all(context_manager):
         assert count == 2
 
 @pytest.mark.asyncio
-async def test_cache_request_discard(context_manager):
+async def test_cache_request_discard(context):
     count = 0
 
     @request_cache('b', 'a')
@@ -107,7 +106,7 @@ async def test_cache_request_discard(context_manager):
         count += 1
         return a + b + c
 
-    async with context_manager():
+    async with context():
 
         ret = await mysum(1)
         assert ret == 3
@@ -161,7 +160,7 @@ async def test_cache_request_discard(context_manager):
 # --- REDIS CACHING ---
 
 @pytest.mark.asyncio
-async def test_cache_redis(context_manager):
+async def test_cache_redis(context):
     count = 0
 
     @redis_cache('a', 'b')
@@ -170,7 +169,7 @@ async def test_cache_redis(context_manager):
         count += 1
         return a + b + c
 
-    async with context_manager():
+    async with context():
         ret = await mysum(3, 3, 3)
         assert ret == 9
         assert count == 1
@@ -184,7 +183,7 @@ async def test_cache_redis(context_manager):
         assert count == 2
 
 @pytest.mark.asyncio
-async def test_cache_redis_with_objects(context_manager):
+async def test_cache_redis_with_objects(context):
     count = 0
     class Foo(NamedTuple):
         id: int
@@ -199,7 +198,7 @@ async def test_cache_redis_with_objects(context_manager):
         count += 1
         return a.value + b.value + c
 
-    async with context_manager():
+    async with context():
         ret = await mysum(Foo(1, 100, 'a'), Foo(2, 200, 'b'))
         assert ret == 300
         assert count == 1
@@ -217,7 +216,7 @@ async def test_cache_redis_with_objects(context_manager):
         assert count == 2
 
 @pytest.mark.asyncio
-async def test_cache_redis_discard_all(context_manager):
+async def test_cache_redis_discard_all(context):
     count = 0
 
     @redis_cache('a', 'b')
@@ -226,7 +225,7 @@ async def test_cache_redis_discard_all(context_manager):
         count += 1
         return a + b + c
 
-    async with context_manager():
+    async with context():
         await mysum.discard_all()
 
         ret = await mysum(3, 3, 3)
@@ -244,7 +243,7 @@ async def test_cache_redis_discard_all(context_manager):
         assert count == 2
 
 @pytest.mark.asyncio
-async def test_cache_redis_discard(context_manager):
+async def test_cache_redis_discard(context):
     count = 0
 
     @redis_cache('b', 'a')
@@ -260,7 +259,7 @@ async def test_cache_redis_discard(context_manager):
         count += 1
         return a + b + c
 
-    async with context_manager():
+    async with context():
 
         ret = await mysum(1)
         assert ret == 3
@@ -312,7 +311,7 @@ async def test_cache_redis_discard(context_manager):
         assert count == 2
 
 @pytest.mark.asyncio
-async def test_cache_redis_ttl(context_manager):
+async def test_cache_redis_ttl(context):
     count = 0
     setup_cache(default_ttl=200)
 
@@ -322,7 +321,7 @@ async def test_cache_redis_ttl(context_manager):
         count += 1
         return a + b + c
 
-    async with context_manager():
+    async with context():
 
         ret = await mysum2(1)
         assert ret == 3

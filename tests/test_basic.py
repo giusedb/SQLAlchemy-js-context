@@ -36,7 +36,7 @@ def test_proxy_dict_isolation():
     assert max_dashes == 1
     assert len(result) == 40
 
-def test_context_segregation(context_manager):
+def test_context_segregation(context):
     from jsalchemy_web_context import session, request
 
 
@@ -44,7 +44,7 @@ def test_context_segregation(context_manager):
         token = None
         async def req(y):
             nonlocal token
-            async with context_manager(token) as ctx:
+            async with context(token) as ctx:
                 assert bool(token) == bool(y)
                 if token:
                     _ = session.foo == 'foobar', 'Session not connected'
@@ -55,7 +55,7 @@ def test_context_segregation(context_manager):
                     session.foo = 'foobar'
                 token = ctx.token
 
-            async with context_manager(token) as ctx:
+            async with context(token) as ctx:
                 assert session.foo == 'foobar', 'Session not connected'
                 get = request.foo
                 assert get == None
@@ -70,7 +70,7 @@ def test_context_segregation(context_manager):
 
     run(main())
 
-def test_basic(session_maker, item, context_manager):
+def test_basic(session_maker, item, context):
 
 
     token = None
@@ -78,14 +78,14 @@ def test_basic(session_maker, item, context_manager):
 
     async def login():
         nonlocal token
-        async with context_manager() as ctx:
+        async with context() as ctx:
             await asyncio.sleep(0)
             token = ctx.token
 
     async def set_data():
         nonlocal token
         nonlocal count
-        async with context_manager(token):
+        async with context(token):
             count += 1
             db.add(item(name='foo'))
             request.attribute  = 'bar'
@@ -96,7 +96,7 @@ def test_basic(session_maker, item, context_manager):
 
     async def get_data():
         nonlocal token
-        async with context_manager(token):
+        async with context(token):
             items = (await db.execute(select(item))).scalars().all()
             assert len(items) == count
             assert request.attribute == None
