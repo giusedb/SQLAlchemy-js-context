@@ -57,7 +57,7 @@ class ContextManager:
         self.web_session_man = RedisSessionManager(redis_connection)
         if change_call_back or trace_changes:
             from .interceptors import ChangeInterceptor
-            self.change_interceptor = ChangeInterceptor(change_call_back)
+            self.change_interceptor = ChangeInterceptor(change_call_back, request=request)
         else:
             self.change_interceptor = None
 
