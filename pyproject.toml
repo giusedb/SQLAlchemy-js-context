@@ -2,30 +2,47 @@
 name = "sqlalchemy-js-web-context"
 version = "0.1.1"
 description = "Manage asynchronous contexts with SQLAlchemy and Redis"
-authors = [
-    {name = "Giuseppe Di Bona",email = "giusedb@gmail.com"}
-]
-keywords = [ "async", "context", "web-framework" ]
-license = {text = "GPLv3.1"}
-readme = "README.md"
+authors = [{ name = "Giuseppe Di Bona", email = "giusedb@gmail.com" }]
 requires-python = ">=3.11.0,<4.0.0"
+readme = "README.md"
+license = { text = "GPLv3.1" }
+keywords = [
+    "async",
+    "context",
+    "web-framework",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
 dependencies = [
     "sqlalchemy (>=2.0.43,<3.0.0)",
     "greenlet (>=3.2.4,<4.0.0)",
-    "redis (>=6.4.0,<7.0.0)"
+    "redis (>=6.4.0,<7.0.0)",
 ]
 
-[tool.poetry]
-packages = [{include = "jsalchemy_web_context", from = "src"}]
+[dependency-groups]
+dev = [
+    "pylint>=3.3.1,<4",
+    "pytest>=8.4.1,<9",
+    "fakeredis>=2.31.0,<3",
+    "aiosqlite>=0.21.0,<0.22",
+    "pytest-asyncio>=1.1.0,<2",
+    "pytest-mock>=3.14.1,<4",
+]
 
-[tool.poetry.group.dev.dependencies]
-pylint = "^3.3.1"
-pytest = "^8.4.1"
-fakeredis = "^2.31.0"
-aiosqlite = "^0.21.0"
-pytest-asyncio = "^1.1.0"
-pytest-mock = "^3.14.1"
+[tool.hatch.build.targets.sdist]
+include = ["src/jsalchemy_web_context"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/jsalchemy_web_context"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/jsalchemy_web_context" = "jsalchemy_web_context"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
