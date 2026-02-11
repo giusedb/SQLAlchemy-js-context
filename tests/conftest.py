@@ -53,7 +53,8 @@ def item(session_maker, engine):
 def context(session_maker):
     """Return a ContextManager instance."""
     from jsalchemy_web_context.manager import ContextManager
-    return ContextManager(session_maker, FakeRedis.from_url('redis://localhost:6379/0'), auto_commit=True)
+    return ContextManager(session_maker, FakeRedis.from_url('redis://localhost:6379/0'),
+                          auto_commit=True, trace_changes=True)
 
 
 # @pytest.fixture

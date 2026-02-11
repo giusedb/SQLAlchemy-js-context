@@ -123,14 +123,18 @@ class ChangeInterceptor:
             else:
                 self.request.result.new.update({model(**stmt._values)})
         elif isinstance(stmt, Update):
+            updated = execute_state.session.execute(select(pk).where(stmt.whereclause)).scalars().all()
+            if not updated:
+                return
             if model not in tracker.invalids:
                 tracker.invalids[model] = set()
-            updated = execute_state.session.execute(select(pk).where(stmt.whereclause)).scalars().all()
             tracker.invalids[model].update(updated)
         elif isinstance(stmt, Delete):
+            deleted = execute_state.session.execute(select(pk).where(stmt.whereclause)).scalars().all()
+            if not deleted:
+                return
             if model not in tracker.delete:
                 tracker.delete[model] = set()
-            deleted = execute_state.session.execute(select(pk).where(stmt.whereclause)).scalars().all()
             tracker.delete[model].update(deleted)
 
     def _on_rollback(self, session: Session, previous):
@@ -172,7 +176,6 @@ class ChangeInterceptor:
                 tracker.update.difference_update(
                     filter(lambda x: type(x) == model and getter(x) in ids,
                            tracker.update))
-
 
     def _on_before_commit(self, session):
         """
