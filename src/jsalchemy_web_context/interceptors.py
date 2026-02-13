@@ -15,10 +15,11 @@ class ResultData:
         self.extra = {}
         self.m2m = []
         self.invalids = {}
+        self.loaded = defaultdict(list)
 
     def update_diff(self, request):
         """Generate a dict with the data difference of the updated records."""
-        on_load = {model: {x['id']: x for x in items} for model, items in request.loaded.items() }
+        on_load = {model: {x['id']: x for x in items} for model, items in self.loaded.items() }
         ret = {}
         for model, grp in groupby(sorted(self.update, key=lambda x: type(x).__name__), type):
             load_model = on_load[model]
@@ -43,12 +44,13 @@ class ResultData:
         self.extra.clear()
         self.m2m.clear()
         self.invalids.clear()
+        self.loaded.clear()
 
     def __repr__(self):
         summary = {k: v for k, v in ((k, len(getattr(self, k))) for k in self.__slots__) if v}
         return f"ResultData: {summary}"
 
-    __slots__ = ('extra', 'delete', 'm2m', 'new', 'update', 'invalids')
+    __slots__ = ('extra', 'delete', 'm2m', 'new', 'update', 'invalids', 'loaded')
 
 
 class ChangeInterceptor:
@@ -84,7 +86,6 @@ class ChangeInterceptor:
         in the current request context.
         """
         self.request.result = ResultData()
-        self.request.loaded = defaultdict(list)
 
     def end_transaction(self):
         """
@@ -201,7 +202,7 @@ class ChangeInterceptor:
             target (DeclarativeBase): The model instance that was loaded.
             context: The load event context.
         """
-        self.request.loaded[target.__class__].append(
+        self.request.result.loaded[target.__class__].append(
             {attr: getattr(target, attr) for attr in (target.__mapper__.columns.keys())})
 
     def _m2m_append(self, target, value, initiator):
