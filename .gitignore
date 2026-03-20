@@ -4,3 +4,4 @@ tests/__pycache__
 poetry.lock
 *.pyc
 uv.lock
+AGENTS.md
