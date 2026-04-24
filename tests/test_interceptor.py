@@ -3,7 +3,7 @@ import pytest_asyncio
 from sqlalchemy import insert, update, delete
 
 from jsalchemy_web_context import db, request
-from jsalchemy_web_context.interceptors import ChangeInterceptor, ResultData
+from jsalchemy_web_context.interceptors import ChangeInterceptor, DBChange
 
 
 @pytest_asyncio.fixture
@@ -11,7 +11,7 @@ async def intercepted(context, models):
     Container, Item, OtherItem = models
 
 
-    intercepted = ResultData()
+    intercepted = DBChange()
 
     def on_intercepts(data):
         intercepted.clear()

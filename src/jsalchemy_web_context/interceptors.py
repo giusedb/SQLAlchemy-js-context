@@ -7,7 +7,7 @@ from sqlalchemy import event, Insert, Update, select, Select, Delete
 from sqlalchemy.orm import DeclarativeBase, Session, RelationshipDirection
 from sqlalchemy.orm.unitofwork import UOWTransaction
 
-class ResultData:
+class DBChange:
     def __init__(self):
         self.new = set()
         self.update = set()
@@ -85,7 +85,7 @@ class ChangeInterceptor:
         Initialize tracking of changes by setting up a ResultData object
         in the current request context.
         """
-        self.request.result = ResultData()
+        self.request.result = DBChange()
 
     def end_transaction(self):
         """
@@ -113,7 +113,7 @@ class ChangeInterceptor:
         stmt = execute_state.statement
         if isinstance(stmt, Select):
             return
-        tracker: ResultData = self.request.result
+        tracker: DBChange = self.request.result
         model = self.table_to_model.get(stmt.table)
         if not model:
             return
