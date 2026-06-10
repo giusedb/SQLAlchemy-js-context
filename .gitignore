@@ -6,3 +6,5 @@ poetry.lock
 uv.lock
 AGENTS.md
 .aider*
+wiki
+DOCUMENTATION.md
